@@ -250,11 +250,14 @@ void Node::PublishTrajectoryStates(const ::ros::WallTimerEvent& timer_event) {
 
         last_scan_matched_point_cloud_time_ = trajectory_state.pose_estimate.time;
         last_scan_matched_update_time_ =  ros::Time::now();
+        stamped_transform.header.stamp = ros::Time::now();
     } else {
       // If we do not publish a new point cloud, we still allow time of the
       // published poses to advance.
       stamped_transform.header.stamp = ToRos(last_scan_matched_point_cloud_time_) + (ros::Time::now() - last_scan_matched_update_time_);
     }
+
+    LOG(INFO)<<"Current delay: "<<(ros::Time::now() - stamped_transform.header.stamp).toSec();
 
     if (trajectory_state.published_to_tracking != nullptr) {
       if (trajectory_state.trajectory_options.provide_odom_frame) {
