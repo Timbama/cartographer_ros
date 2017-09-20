@@ -212,8 +212,8 @@ std::vector<chisel::ChiselPtr<chisel::DistVoxel> > MapBuilderBridge::GetTSDFList
 }
 
 
-std::vector<std::shared_ptr<voxblox::TsdfMap>> MapBuilderBridge::GetVoxbloxTSDFList() {
-  std::vector<std::shared_ptr<voxblox::TsdfMap>> tsdf_list;
+std::vector<std::shared_ptr<cartographer::mapping_3d::LocalizedTsdfMap>> MapBuilderBridge::GetVoxbloxTSDFList() {
+  std::vector<std::shared_ptr<cartographer::mapping_3d::LocalizedTsdfMap>> tsdf_list;
   for (int trajectory_id = 0;
        trajectory_id < map_builder_.num_trajectory_builders();
        ++trajectory_id) {

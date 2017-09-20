@@ -28,6 +28,7 @@
 #include "cartographer/common/time.h"
 #include "cartographer/mapping/proto/submap_visualization.pb.h"
 #include "cartographer/mapping/sparse_pose_graph.h"
+#include "cartographer/mapping_3d/voxblox_localized_tsdf_map.h"
 #include "cartographer/sensor/point_cloud.h"
 #include "cartographer/transform/rigid_transform.h"
 #include "cartographer/transform/transform.h"
@@ -217,10 +218,14 @@ void Node::PublishTSDF(const ros::WallTimerEvent &unused_timer_event){
   }
   else if(node_options_.map_builder_options.map_type() == carto::mapping::proto::MapBuilderOptions::VOXBLOX_TSDF)
   {
-    std::vector<std::shared_ptr<voxblox::TsdfMap>> tsdf_list = map_builder_bridge()->GetVoxbloxTSDFList();
+    std::vector<std::shared_ptr<cartographer::mapping_3d::LocalizedTsdfMap>> tsdf_list = map_builder_bridge()->GetVoxbloxTSDFList();
     int trajectory_id = 0;
-    pcl::PointCloud<pcl::PointXYZI> pointcloud;
-/*
+
+    voxblox_msgs::Mesh mesh_msg;
+    for(std::shared_ptr<cartographer::mapping_3d::LocalizedTsdfMap> tsdf : tsdf_list)
+    {
+      pcl::PointCloud<pcl::PointXYZI> pointcloud;
+      /*
     float min_x = -5.;
     float min_y = -5.;
     float min_z = 1.;
@@ -250,32 +255,38 @@ void Node::PublishTSDF(const ros::WallTimerEvent &unused_timer_event){
         }
       }
     }*/
-    //createDistancePointcloudFromTsdfLayer(tsdf_list[0]->getTsdfLayer(), &pointcloud);
-   // pointcloud.header.frame_id = "world";
-    //chisel_bridge()->tsdf_pointcloud_publisher_.publish(pointcloud);
+      //createDistancePointcloudFromTsdfLayer(tsdf_list[0]->getTsdfLayer(), &pointcloud);
+      // pointcloud.header.frame_id = "world";
+      //chisel_bridge()->tsdf_pointcloud_publisher_.publish(pointcloud);
 
-    //mesh_publisher_
-  /*  voxblox::MeshIntegrator<voxblox::TsdfVoxel>::Config mesh_config;
-    mesh_config.min_weight = 0.1;
+      //mesh_publisher_
+/*
+      voxblox::MeshIntegrator<voxblox::TsdfVoxel>::Config mesh_config;
+      mesh_config.min_weight = 0.1;
 
-    std::shared_ptr<voxblox::MeshLayer> mesh_layer_;
-    std::shared_ptr<voxblox::MeshIntegrator<voxblox::TsdfVoxel>> mesh_integrator_;
+      std::shared_ptr<voxblox::MeshLayer> mesh_layer_;
+      std::shared_ptr<voxblox::MeshIntegrator<voxblox::TsdfVoxel>> mesh_integrator_;
 
-    mesh_layer_.reset(new voxblox::MeshLayer(tsdf_list[0]->block_size()));
-    mesh_integrator_.reset(new voxblox::MeshIntegrator<voxblox::TsdfVoxel>(
-        mesh_config, tsdf_list[0]->getTsdfLayerPtr(), mesh_layer_.get()));
-
-
-    constexpr bool only_mesh_updated_blocks = false;
-    constexpr bool clear_updated_flag = true;
-    mesh_integrator_->generateMesh(only_mesh_updated_blocks,
-                                   clear_updated_flag);
-    voxblox_msgs::Mesh mesh_msg;
-    voxblox::generateVoxbloxMeshMsg(mesh_layer_, voxblox::ColorMode::kNormals, &mesh_msg);
-    mesh_msg.header.frame_id = "world";
-    chisel_bridge()->mesh_publisher_.publish(mesh_msg);*/
+      mesh_layer_.reset(new voxblox::MeshLayer(tsdf->block_size()));
+      mesh_integrator_.reset(new voxblox::MeshIntegrator<voxblox::TsdfVoxel>(
+                               mesh_config, tsdf->getTsdfLayerPtr(), mesh_layer_.get()));
 
 
+      constexpr bool only_mesh_updated_blocks = false;
+      constexpr bool clear_updated_flag = true;
+      mesh_integrator_->generateMesh(only_mesh_updated_blocks,
+                                     clear_updated_flag);
+
+      voxblox_msgs::Mesh mesh_msg_local;
+      voxblox::generateVoxbloxMeshMsg(mesh_layer_, voxblox::ColorMode::kNormals, &mesh_msg_local);
+      mesh_msg.header = mesh_msg_local.header;
+      mesh_msg.mesh_blocks.insert(mesh_msg.mesh_blocks.end(),mesh_msg_local.mesh_blocks.begin(),mesh_msg_local.mesh_blocks.end());
+*/
+
+    }
+
+   // mesh_msg.header.frame_id = "world";
+   // chisel_bridge()->mesh_publisher_.publish(mesh_msg);
   }
 
 }
@@ -303,7 +314,7 @@ void Node::PublishTrajectoryStates(const ::ros::WallTimerEvent& timer_event) {
                     carto::sensor::TransformPointCloud(
                         trajectory_state.pose_estimate.point_cloud,
                         tracking_to_local.inverse().cast<float>()));
-        geometry_msgs::TransformStamped transform = map_builder_bridge_.tf_buffer_->lookupTransform("spin_lidar_lidar_mount_link_fixed", "base_link", matched_cloud.header.stamp, ros::Duration(1.0) );
+        geometry_msgs::TransformStamped transform = map_builder_bridge_.tf_buffer_->lookupTransform("base_link", "base_link", matched_cloud.header.stamp, ros::Duration(1.0) );
 
         sensor_msgs::PointCloud2 matched_cloud_transformed;
         pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -322,7 +333,7 @@ void Node::PublishTrajectoryStates(const ::ros::WallTimerEvent& timer_event) {
                              tf_transform);
         pcl::toROSMsg(cloud_transformed, matched_cloud_transformed);
         matched_cloud_transformed.header.stamp = matched_cloud.header.stamp;
-        matched_cloud_transformed.header.frame_id = "spin_lidar_lidar_mount_link_fixed"; //todo(kdaun) move frame definition to config
+        matched_cloud_transformed.header.frame_id = "base_link"; //todo(kdaun) move frame definition to config spin_lidar_lidar_mount_link_fixed
 
         scan_matched_point_cloud_publisher_.publish(matched_cloud_transformed);
 
