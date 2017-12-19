@@ -42,8 +42,6 @@
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
 #include "tf2_eigen/tf2_eigen.h"
-#include "chisel_msgs/VolumeMessage.h"
-#include "chisel_msgs/IncrementalChangesMessage.h"
 #include "pcl_ros/point_cloud.h"
 #include "pcl_ros/transforms.h"
 namespace cartographer_ros {
@@ -127,19 +125,6 @@ Node::Node(const NodeOptions& node_options, tf2_ros::Buffer* const tf_buffer)
         std::thread(&Node::SpinOccupancyGridThreadForever, this);
   }
 
-  if(node_options_.map_builder_options.use_tsdf())
-  {
-      chisel_bridge()->mesh_publisher_ = node_handle_.advertise<visualization_msgs::MarkerArray>("chisel_mesh", 1);
-      chisel_bridge()->uncorrected_mesh_publisher_ = node_handle_.advertise<visualization_msgs::MarkerArray>("uncorrected_chisel_mesh", 1);
-      chisel_bridge()->debug_mesh_publisher_ = node_handle_.advertise<visualization_msgs::MarkerArray>("debug_chisel_mesh", 1);
-      chisel_bridge()->tsdf_pointcloud_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>("chisel_tsdf", 1);
-      chisel_bridge()->aggregated_scan_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>("aggregated_scan", 1);
-      chisel_bridge()->raw_aggregated_scan_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>("raw_aggregated_scan", 1);
-      chisel_bridge()->matched_batch_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>("matched_batch", 1);
-      chisel_bridge()->volume_publisher_ = node_handle_.advertise<chisel_msgs::VolumeMessage>("tsdf_volume", 1);
-      chisel_bridge()->incremental_changes_publisher_ = node_handle_.advertise<chisel_msgs::IncrementalChangesMessage>("tsdf_incremental_changes", 1);
-
-  }
 
   scan_matched_point_cloud_publisher_ =
       node_handle_.advertise<sensor_msgs::PointCloud2>(
@@ -152,12 +137,7 @@ Node::Node(const NodeOptions& node_options, tf2_ros::Buffer* const tf_buffer)
       ::ros::WallDuration(node_options_.pose_publish_period_sec),
       &Node::PublishTrajectoryStates, this));*/
 
-  if(node_options_.map_builder_options.use_tsdf())
-  {
-      wall_timers_.push_back(node_handle_.createWallTimer(
-          ::ros::WallDuration(node_options_.submap_publish_period_sec),
-          &Node::PublishTSDF, this));
-  }
+
   double tfRefreshPeriod = 0.025;
 
   publishThread = std::thread(std::bind(&Node::publishTFLoop, this, tfRefreshPeriod));
@@ -180,8 +160,6 @@ Node::~Node() {
 
 MapBuilderBridge* Node::map_builder_bridge() { return &map_builder_bridge_; }
 
-ChiselBridge* Node::chisel_bridge() { return &chisel_bridge_; }
-
 
 bool Node::HandleSubmapQuery(
     ::cartographer_ros_msgs::SubmapQuery::Request& request,
@@ -198,9 +176,7 @@ void Node::PublishSubmapList(const ::ros::WallTimerEvent& unused_timer_event) {
   }
 }
 
-void Node::PublishTSDF(const ros::WallTimerEvent &unused_timer_event){
-    chisel_bridge()->PublishTSDF(map_builder_bridge());
-}
+
 
 
 void Node::PublishTrajectoryStates(const ::ros::WallTimerEvent& timer_event) {

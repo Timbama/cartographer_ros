@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "cartographer/common/mutex.h"
-#include "cartographer_ros/chisel_bridge.h"
 #include "cartographer_ros/map_builder_bridge.h"
 #include "cartographer_ros/node_options.h"
 #include "cartographer_ros/trajectory_options.h"
@@ -75,8 +74,6 @@ class Node {
 
   ::ros::NodeHandle* node_handle();
   MapBuilderBridge* map_builder_bridge();
-  ChiselBridge* chisel_bridge();
-
  private:
   bool HandleSubmapQuery(
       cartographer_ros_msgs::SubmapQuery::Request& request,
@@ -101,7 +98,6 @@ class Node {
   bool ValidateTrajectoryOptions(const TrajectoryOptions& options);
   bool ValidateTopicName(const ::cartographer_ros_msgs::SensorTopics& topics,
                          const TrajectoryOptions& options);
-  void PublishTSDF(const ::ros::WallTimerEvent& unused_timer_event);  
   void publishTFLoop(double publishPeriod);
 
 
@@ -111,9 +107,6 @@ class Node {
 
   cartographer::common::Mutex mutex_;
   MapBuilderBridge map_builder_bridge_ GUARDED_BY(mutex_);
-
-  cartographer::common::Mutex mutex_chisel_bridge_;
-  ChiselBridge chisel_bridge_ GUARDED_BY(mutex_chisel_bridge_);
 
   ::ros::NodeHandle node_handle_;
   ::ros::Publisher submap_list_publisher_;

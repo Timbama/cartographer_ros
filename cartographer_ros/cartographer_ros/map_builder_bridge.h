@@ -58,7 +58,6 @@ class MapBuilderBridge {
       cartographer_ros_msgs::SubmapQuery::Response& response);
 
   cartographer_ros_msgs::SubmapList GetSubmapList();
-  std::vector<chisel::ChiselPtr<chisel::DistVoxel>> GetTSDFList();
   std::unique_ptr<nav_msgs::OccupancyGrid> BuildOccupancyGrid();
   std::unordered_map<int, TrajectoryState> GetTrajectoryStates();
 
