@@ -18,12 +18,12 @@ project(cartographer_ros)
 
 set(PACKAGE_DEPENDENCIES
   cartographer_ros_msgs
-  chisel_mason_plugins
   eigen_conversions
   geometry_msgs
   message_runtime
   nav_msgs
   pcl_conversions
+  pcl_ros
   rosbag
   roscpp
   roslib
