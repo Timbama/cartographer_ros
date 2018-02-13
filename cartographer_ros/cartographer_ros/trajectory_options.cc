@@ -32,6 +32,7 @@ TrajectoryOptions CreateTrajectoryOptions(
   options.published_frame =
       lua_parameter_dictionary->GetString("published_frame");
   options.odom_frame = lua_parameter_dictionary->GetString("odom_frame");
+  options.published_pointcloud_frame = lua_parameter_dictionary->GetString("published_pointcloud_frame");
   options.provide_odom_frame =
       lua_parameter_dictionary->GetBool("provide_odom_frame");
   options.use_odometry = lua_parameter_dictionary->GetBool("use_odometry");

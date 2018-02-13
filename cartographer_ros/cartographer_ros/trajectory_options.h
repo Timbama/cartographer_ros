@@ -31,6 +31,7 @@ struct TrajectoryOptions {
   string tracking_frame;
   string published_frame;
   string odom_frame;
+  string published_pointcloud_frame;
   bool provide_odom_frame;
   bool use_odometry;
   bool use_laser_scan;

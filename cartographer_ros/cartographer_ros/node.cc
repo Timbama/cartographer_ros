@@ -200,8 +200,8 @@ void Node::PublishTrajectoryStates(const ::ros::WallTimerEvent& timer_event) {
                     trajectory_state.trajectory_options.tracking_frame,
                     carto::sensor::TransformPointCloud(
                         trajectory_state.pose_estimate.point_cloud,
-                        tracking_to_local.inverse().cast<float>()));/*
-        geometry_msgs::TransformStamped transform = map_builder_bridge_.tf_buffer_->lookupTransform("spin_lidar_lidar_mount_link_fixed", "base_link", matched_cloud.header.stamp, ros::Duration(1.0) );
+                        tracking_to_local.inverse().cast<float>()));
+        geometry_msgs::TransformStamped transform = map_builder_bridge_.tf_buffer_->lookupTransform(trajectory_state.trajectory_options.published_pointcloud_frame, trajectory_state.trajectory_options.tracking_frame, matched_cloud.header.stamp, ros::Duration(1.0) );
 
         sensor_msgs::PointCloud2 matched_cloud_transformed;
         pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -220,9 +220,9 @@ void Node::PublishTrajectoryStates(const ::ros::WallTimerEvent& timer_event) {
                              tf_transform);
         pcl::toROSMsg(cloud_transformed, matched_cloud_transformed);
         matched_cloud_transformed.header.stamp = matched_cloud.header.stamp;
-        matched_cloud_transformed.header.frame_id = "spin_lidar_lidar_mount_link_fixed"; //todo(kdaun) move frame definition to config*/
+        matched_cloud_transformed.header.frame_id = trajectory_state.trajectory_options.published_pointcloud_frame;//"spin_lidar_lidar_mount_link_fixed";
 
-        scan_matched_point_cloud_publisher_.publish(matched_cloud);
+        scan_matched_point_cloud_publisher_.publish(matched_cloud_transformed);
 
         last_scan_matched_point_cloud_time_ = trajectory_state.pose_estimate.time;
     } else {
