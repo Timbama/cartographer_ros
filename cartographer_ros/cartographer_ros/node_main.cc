@@ -93,7 +93,7 @@ public:
 
     void SyscommandCallback(const std_msgs::String::ConstPtr& msg)
     {
-        if(msg->data == "reset" || msg->data == "reset_cartographer")
+        if(msg->data == "reset_cartographer")
         {
             ROS_INFO("Received: %s", msg->data.c_str());
             ROS_INFO("Writing data...");
