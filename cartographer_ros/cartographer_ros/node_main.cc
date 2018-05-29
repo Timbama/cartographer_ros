@@ -71,7 +71,7 @@ public:
 
 
     void Run() {
-        constexpr double kTfBufferCacheTimeInSeconds = 1e6;
+        constexpr double kTfBufferCacheTimeInSeconds = 10.;
         tf_buffer_ = cartographer::common::make_unique<tf2_ros::Buffer>(::ros::Duration(kTfBufferCacheTimeInSeconds));
         //tf2_ros::TransformListener tf(tf_buffer);
         tf_ = cartographer::common::make_unique<tf2_ros::TransformListener>(*tf_buffer_);
@@ -96,8 +96,8 @@ public:
         if(msg->data == "reset_cartographer")
         {
             ROS_INFO("Received: %s", msg->data.c_str());
-            ROS_INFO("Writing data...");
-            node_->WriteAssets("test123");
+            //ROS_INFO("Writing data...");
+            //node_->WriteAssets("test123");
             ROS_INFO("Resetting now");
             Finish();
             node_.reset();
